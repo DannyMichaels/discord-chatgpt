@@ -8,6 +8,10 @@ const chatai = require('./commands/chatai');
 const aiimageedit = require('./commands/aiimageedit');
 const randomimage = require('./commands/randomimage');
 const codeai = require('./commands/codeai');
+const express = require('express');
+var engines = require('consolidate');
+const cors = require('cors');
+const bodyParser = require('body-parser');
 
 const client = new Client({
   intents: [
@@ -21,82 +25,7 @@ const client = new Client({
   ],
 });
 
-const prefix = '!';
-
 client.commands = new Collection();
-
-const configuration = new Configuration({
-  organization: process.env.OPENAI_ORG,
-  apiKey: process.env.OPENAI_KEY,
-});
-
-const openai = new OpenAIApi(configuration);
-
-const COMMAND_ALIASES = {
-  chatai: ['chatai', 'chat', 'chatgpt', 'chatbot', 'aichat'],
-  aiimage: ['aiimage', 'imageai', 'image', 'makeimage'],
-  aiimagevariation: [
-    'aiimagevariation',
-    'aiimagevar',
-    'imagevariation',
-    'imagevar',
-    'reviseimage',
-    'aireviseimage',
-  ],
-  aiimageedit: ['imageedit', 'editimage', 'aiimageedit', 'aieditimage'],
-  randomimage: [
-    'randomimage',
-    'random',
-    'randomimg',
-    'randompic',
-    'airandomimage',
-    'airandompic',
-    'airandomimg',
-    'rand',
-  ],
-  codeai: ['codeai', 'code', 'codegpt', 'codebot', 'aicode'],
-};
-
-client.on('messageCreate', async (message) => {
-  try {
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
-
-    const args = message.content.slice(prefix.length).split(/ +/);
-    const command = args.shift().toLowerCase();
-    let prompt = message.content.slice(prefix.length + command.length + 1);
-
-    console.log(`${Date.now()}: ${message.author.username}: ${prompt}`);
-
-    if (COMMAND_ALIASES['chatai'].includes(command)) {
-      return await chatai(message, openai, prompt);
-    }
-
-    if (COMMAND_ALIASES['aiimage'].includes(command)) {
-      return await aiimage(message, openai, prompt);
-    }
-
-    if (COMMAND_ALIASES['aiimagevariation'].includes(command)) {
-      return await aiimagevariation(message, openai);
-    }
-
-    if (COMMAND_ALIASES['aiimageedit'].includes(command)) {
-      return await aiimageedit(message, openai, prompt);
-    }
-    if (COMMAND_ALIASES['randomimage'].includes(command)) {
-      return await randomimage(message, prompt || '1', openai);
-    }
-
-    if (COMMAND_ALIASES['codeai'].includes(command)) {
-      return await codeai(message, openai, prompt);
-    }
-  } catch (error) {
-    console.log(error?.response?.data?.error?.message || error);
-    return handleError(
-      message,
-      error?.response?.data?.error?.message || JSON.stringify(error)
-    );
-  }
-});
 
 client.login(process.env.DISCORD_TOKEN);
 
@@ -118,4 +47,21 @@ client.on('ready', () => {
       .get('1059855592795144192')
       .send("Beep boop, I'm online!");
   }
+});
+
+const app = express();
+
+app.use(cors());
+app.use(bodyParser.json());
+
+app.post('/message', async (req, res) => {
+  client.channels.cache.get(req.body.channel).send(req.body.message);
+
+  return res.status(200).json({
+    statusText: 'success',
+  });
+});
+
+app.listen(8000, () => {
+  console.log(`Server is running on port ${8000}.`);
 });

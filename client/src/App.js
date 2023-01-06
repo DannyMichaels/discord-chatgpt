@@ -25,9 +25,25 @@ function App() {
         <Select value={channel} onChange={(e) => setChannel(e.target.value)}>
           <option value="1059241282091892846">General</option>
           <option value="1059855592795144192">Bot</option>
+          <option value="1060814798536843335">Secret</option>
         </Select>
         <Textarea
           value={message}
+          onKeyPress={(e) => {
+            const shiftKeyPressed = e.shiftKey;
+            if (e.key !== 'Enter') return;
+
+            // if key is enter but there is no value
+            if (!message) {
+              e.preventDefault();
+              return;
+            }
+
+            // if key is enter and shift isn't pressed submit, else enter a new line
+            if (!shiftKeyPressed) {
+              handleSubmit(e);
+            }
+          }}
           onChange={(e) => setMessage(e.target.value)}
         />
         <Button type="submit">Submit</Button>

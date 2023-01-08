@@ -22,10 +22,13 @@ function App() {
     <InnerColumn>
       <Form onSubmit={handleSubmit}>
         <Label>Message:</Label>
-        <Select value={channel} onChange={(e) => setChannel(e.target.value)}>
+        <Select value={ch
+          annel} onChange={(e) => setChannel(e.target.value)}>
           <option value="1059241282091892846">General</option>
           <option value="1059855592795144192">Bot</option>
+
           <option value="1060814798536843335">Secret</option>
+                    <option value="1060422267454103572">NSFW</option>
         </Select>
         <Textarea
           value={message}
